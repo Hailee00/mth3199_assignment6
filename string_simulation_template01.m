@@ -1,16 +1,21 @@
 function string_simulation_template01()
-    num_masses = %your code here
-    total_mass = %your code here
-    tension_force = %your code here
-    string_length = %your code here
-    damping_coeff = %your code here
+    num_masses = 4;
+    total_mass = 4;
+    tension_force = 10;
+    string_length = 10;
+    damping_coeff = 0.3;
+
     dx = string_length/(num_masses+1);
-    amplitude_Uf = %your code here
-    omega_Uf = %your code here
+
+    amplitude_Uf = 2;
+    omega_Uf = 2;
+
     %list of x points (including the two endpoints)
     xlist = linspace(0,string_length,num_masses+2);
+    
     Uf_func = @(t_in) amplitude_Uf*cos(omega_Uf*t_in);
     dUfdt_func = @(t_in) -omega_Uf*amplitude_Uf*sin(omega_Uf*t_in);
+    
     %generate the struct
     string_params = struct();
     string_params.n = num_masses;
@@ -43,9 +48,62 @@ function string_simulation_template01()
     p = 5;                 
     error_desired = 1e-5;
     h_ref = 0.05;
+    
 
+    string_plot = plot(0, 0, 'k', 'linewidth', 2);
     [tlist,Vlist] = explicit_RK_variable_step_integration(my_rate_func,tspan,V0,h_ref,Fehlberg,p,error_desired);
+    
 
+    mypath1 = 'C:\Users\mepstein\OneDrive - Olin College of Engineering\Desktop\Applied Math\mth3199_assignment6\.git';
+    fname='string_video.mp4';
+    input_fname = [mypath1,fname];
+
+    %create a videowriter, which will write frames to the animation file
+    writerObj = VideoWriter(input_fname);
+
+    %must call open before writing any frames
+    open(writerObj);
+
+    %initialize the current figure and save as object
+    fig1 = figure(1);
+    xlabel('x-axis', 'Interpreter', 'latex','FontSize',15);
+    ylabel('y-axis', 'Interpreter','latex','FontSize',15)
+    title('Vibrating String Simulation Animation', 'Interpreter', 'latex','FontSize',20)
+
+    set(fig1,'units','pixels','position',[100 100 1440 1440]);
+    set(fig1,'resize','off');
+    
+    hold on;
+    axis equal;
+    axis([-5, 15, -15, 15])
+
+    xplotlist = [-2 xlist 12]
+    for i = 1:length(tlist)
+        % plot the string
+        set(string_plot,'xdata',xplotlist,'ydata',Vlist(i,:), 'Marker', 'o', 'Markersize', 10)
+
+        % % plot the masses
+        % for j = 2:length(xlist)-1
+        %     xlist(j)
+        %     Vlist(i,j)
+        %     set(string_plot,'xdata',xlist(j),'ydata',Vlist(i,j))
+        % end
+        
+        %write the frame to the video
+        pause(0.01);
+        axis equal; 
+        axis square
+        axis([-5, 15, -15, 15])
+
+        hold on;
+        drawnow;
+
+        %capture a frame (what is currently plotted)
+        current_frame = getframe(gcf);
+        writeVideo(writerObj,current_frame)
+        drawnow;
+    end
+    close(writerObj)
     % [tlist,Vlist] = your_integrator(my_rate_func,tspan,V0,...);
     %your code to generate an animation of the system
 end
