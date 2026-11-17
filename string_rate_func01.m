@@ -26,7 +26,12 @@ function dVdt = string_rate_func01(t,V,string_params)
     Uf = Uf_func(t);
     dUfdt = dUfdt_func(t);
     %compute acceleration
-    d2Udt2 = %your code here (may take several lines)
+    U_all = [0; U;Uf];
+    dU_all = [0; dUdt;dUfdt];
+    u_1 = U_all(1:n) -2*U_all(2:n+2)+ U_all(3:n+3);
+    u_2 = dU_all(1:n) -2*dU_all(2:n+2)+ dU_all(3:n+3);
+    d2Udt2 = (n/M)*((Tf/dx)*u_1 + (c/dx)*u_2);
     %assemble state derivative
+    
     dVdt = [dUdt;d2Udt2];
 end
