@@ -24,11 +24,28 @@ function string_simulation_template01()
     %load string_params into rate function
     my_rate_func = @(t_in,V_in) string_rate_func01(t_in,V_in,string_params);
     %initial conditions
-    U0 = %your code here
-    dUdt0 = %your code here
+    U0 = zeros(num_masses,1);
+    dUdt0 = zeros(num_masses,1);
     V0 = [U0;dUdt0];
-    tspan = %your code here
+    tspan = [0 30];
     %run the integration
+    Fehlberg = struct();
+    Fehlberg.C = [0, 1/4, 3/8, 12/13, 1, 1/2];
+    Fehlberg.B = [16/135, 0, 6656/12825, 28561/56430, -9/50, 2/55;...
+    25/216, 0, 1408/2565, 2197/4104, -1/5, 0];
+    Fehlberg.A = [0,0,0,0,0,0;...
+    1/4, 0,0,0,0,0;...
+    3/32, 9/32, 0,0,0,0;...
+    1932/2197, -7200/2197, 7296/2197, 0,0,0;...
+    439/216, -8, 3680/513, -845/4104, 0,0;...
+    -8/27, 2, -3544/2565, 1859/4104, -11/40, 0];
+    
+    p = 5;                 
+    error_desired = 1e-5;
+    h_ref = 0.05;
+
+    [tlist,Vlist] = explicit_RK_variable_step_integration(my_rate_func,tspan,V0,h_ref,Fehlberg,p,error_desired);
+
     % [tlist,Vlist] = your_integrator(my_rate_func,tspan,V0,...);
     %your code to generate an animation of the system
 end
