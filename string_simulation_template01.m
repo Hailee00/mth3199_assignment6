@@ -54,7 +54,7 @@ function string_simulation_template01()
     [tlist,Vlist] = explicit_RK_variable_step_integration(my_rate_func,tspan,V0,h_ref,Fehlberg,p,error_desired);
     
 
-    mypath1 = 'C:\Users\mepstein\OneDrive - Olin College of Engineering\Desktop\Applied Math\mth3199_assignment6\.git';
+    mypath1 = 'C:\Users\sbechu\OneDrive - Olin College of Engineering\Documents\GitHub\mth3199_assignment6\';
     fname='string_video.mp4';
     input_fname = [mypath1,fname];
 
@@ -77,10 +77,15 @@ function string_simulation_template01()
     axis equal;
     axis([-5, 15, -15, 15])
 
-    xplotlist = [-2 xlist 12]
+    xplotlist = xlist;
+    masses = plot(xlist(2:end-1), zeros(1,num_masses), 'ko', 'MarkerSize', 10);
+
     for i = 1:length(tlist)
         % plot the string
-        set(string_plot,'xdata',xplotlist,'ydata',Vlist(i,:), 'Marker', 'o', 'Markersize', 10)
+        yplotlist = [0, Vlist(i,1:num_masses), Uf_func(tlist(i))];
+        set(string_plot,'xdata',xplotlist,'ydata',yplotlist, 'Marker', '.', 'Markersize', 50)
+
+        set(masses,'xdata',xlist(2:end-1),'ydata',Vlist(i,1:num_masses));
 
         % % plot the masses
         % for j = 2:length(xlist)-1
@@ -104,6 +109,5 @@ function string_simulation_template01()
         drawnow;
     end
     close(writerObj)
-    % [tlist,Vlist] = your_integrator(my_rate_func,tspan,V0,...);
-    %your code to generate an animation of the system
+ 
 end
