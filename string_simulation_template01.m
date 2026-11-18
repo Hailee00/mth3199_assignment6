@@ -66,8 +66,8 @@ function string_simulation_template01()
 
     %initialize the current figure and save as object
     fig1 = figure(1);
-    xlabel('x-axis', 'Interpreter', 'latex','FontSize',15);
-    ylabel('y-axis', 'Interpreter','latex','FontSize',15)
+    xlabel('x-axis (-)', 'Interpreter', 'latex','FontSize',15);
+    ylabel('y-axis (-)', 'Interpreter','latex','FontSize',15)
     title('Vibrating String Simulation Animation', 'Interpreter', 'latex','FontSize',20)
 
     set(fig1,'units','pixels','position',[100 100 1440 1440]);
