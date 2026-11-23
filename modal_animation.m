@@ -27,7 +27,7 @@ function modal_animation
     string_params.c = damping_coeff;
     string_params.dx = dx;
 
-    [M_mat,K_mat] = construct_2nd_order_matrices(string_params);j
+    [M_mat,K_mat] = construct_2nd_order_matrices(string_params);
     %Use MATLAB to solve the generalized eigenvalue problem
     [Ur_mat,lambda_mat] = eig(K_mat,M_mat);
     
@@ -55,8 +55,19 @@ function modal_animation
         Ur = Ur_mat(:,mode);
 
         Uf_func2 = @(t_in) amplitude_Uf*cos(omega*t_in);
-        dUfdt_func2 = @(t_in) -omega_Uf*amplitude_Uf*sin(omega*t_in);
+        dUfdt_func2 = @(t_in) -omega*amplitude_Uf*sin(omega*t_in);
+
+        string_params.Uf_func = Uf_func2;
+        string_params.dUfdt_func = dUfdt_func2;
+
         my_rate_func = @(t_in,V_in) string_rate_func01(t_in,V_in,string_params);
+       
+        U0 = zeros(num_masses,1);
+        dUdt0 = zeros(num_masses,1);
+        V0 = [U0;dUdt0];
+        tspan = [0 30];
+        [tlist,Vlist] = explicit_RK_variable_step_integration(my_rate_func,tspan,V0,h_ref,Fehlberg,p,error_desired);
         %...
+        % animation
     end
 end 
