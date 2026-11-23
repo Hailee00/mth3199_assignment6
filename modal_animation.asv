@@ -1,0 +1,75 @@
+function modal_animation
+    num_masses = 4;
+    total_mass = 4;
+    tension_force = 10;
+    string_length = 10;
+    damping_coeff = 0.3;
+
+    dx = string_length/(num_masses+1);
+
+    amplitude_Uf = 2;
+    omega_Uf = 2;
+
+    %list of x points (including the two endpoints)
+    xlist = linspace(0,string_length,num_masses+2);
+    
+    Uf_func = @(t_in) amplitude_Uf*cos(omega_Uf*t_in);
+    dUfdt_func = @(t_in) -omega_Uf*amplitude_Uf*sin(omega_Uf*t_in);
+
+    %generate the struct
+    string_params = struct();
+    string_params.n = num_masses;
+    string_params.M = total_mass;
+    string_params.Uf_func = Uf_func;
+    string_params.dUfdt_func = dUfdt_func;
+    string_params.Tf = tension_force;
+    string_params.L = string_length;
+    string_params.c = damping_coeff;
+    string_params.dx = dx;
+
+    [M_mat,K_mat] = construct_2nd_order_matrices(string_params);
+    %Use MATLAB to solve the generalized eigenvalue problem
+    [Ur_mat,lambda_mat] = eig(K_mat,M_mat);
+    
+    [lambda,idx] = sort((diag(lambda_mat)));
+    omega_r = sqrt(lambda);
+    Ur_mat = Ur_mat(:, idx);
+
+    Fehlberg = struct();
+    Fehlberg.C = [0, 1/4, 3/8, 12/13, 1, 1/2];
+    Fehlberg.B = [16/135, 0, 6656/12825, 28561/56430, -9/50, 2/55;...
+    25/216, 0, 1408/2565, 2197/4104, -1/5, 0];
+    Fehlberg.A = [0,0,0,0,0,0;...
+    1/4, 0,0,0,0,0;...
+    3/32, 9/32, 0,0,0,0;...
+    1932/2197, -7200/2197, 7296/2197, 0,0,0;...
+    439/216, -8, 3680/513, -845/4104, 0,0;...
+    -8/27, 2, -3544/2565, 1859/4104, -11/40, 0];
+    
+    p = 5;                 
+    error_desired = 1e-5;
+    h_ref = 0.05;
+
+    for mode = 1:3
+        omega = omega_r(mode);
+        Ur = Ur_mat(:,mode);
+
+        Uf_func2 = @(t_in) amplitude_Uf*cos(omega*t_in);
+        dUfdt_func2 = @(t_in) -omega_Uf*amplitude_Uf*sin(omega*t_in);
+        my_rate_func = @(t_in,V_in) string_rate_func01(t_in,V_in,string_params);
+
+        %%
+        V0 = zeros(2*num_masses,1);       
+        T_end = min(10*tension_force/(damping_coeff*omega^2), 100);  % time for buildup
+        [tlist,Vlist] = explicit_RK_variable_step_integration( ...
+            my_rate_func,[0 T_end],V0,h_ref,Fehlberg,p,error_desired);
+
+        
+        t_uniform = (0:2*pi/omega/20:T_end)';
+        Vlist = interp1(tlist,Vlist,t_uniform);
+
+        animate_comparison(t_uniform,Vlist,string_params,xlist,Ur,mode,omega);
+    end
+
+    end
+end 

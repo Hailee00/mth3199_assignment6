@@ -27,9 +27,36 @@ function modal_animation
     string_params.c = damping_coeff;
     string_params.dx = dx;
 
-    [M_mat,K_mat] = construct_2nd_order_matrices(string_params)
+    [M_mat,K_mat] = construct_2nd_order_matrices(string_params);j
     %Use MATLAB to solve the generalized eigenvalue problem
     [Ur_mat,lambda_mat] = eig(K_mat,M_mat);
+    
+    [lambda,idx] = sort((diag(lambda_mat)));
+    omega_r = sqrt(lambda);
+    Ur_mat = Ur_mat(:, idx);
 
-    %...
+    Fehlberg = struct();
+    Fehlberg.C = [0, 1/4, 3/8, 12/13, 1, 1/2];
+    Fehlberg.B = [16/135, 0, 6656/12825, 28561/56430, -9/50, 2/55;...
+    25/216, 0, 1408/2565, 2197/4104, -1/5, 0];
+    Fehlberg.A = [0,0,0,0,0,0;...
+    1/4, 0,0,0,0,0;...
+    3/32, 9/32, 0,0,0,0;...
+    1932/2197, -7200/2197, 7296/2197, 0,0,0;...
+    439/216, -8, 3680/513, -845/4104, 0,0;...
+    -8/27, 2, -3544/2565, 1859/4104, -11/40, 0];
+    
+    p = 5;                 
+    error_desired = 1e-5;
+    h_ref = 0.05;
+
+    for mode = 1:3
+        omega = omega_r(mode);
+        Ur = Ur_mat(:,mode);
+
+        Uf_func2 = @(t_in) amplitude_Uf*cos(omega*t_in);
+        dUfdt_func2 = @(t_in) -omega_Uf*amplitude_Uf*sin(omega*t_in);
+        my_rate_func = @(t_in,V_in) string_rate_func01(t_in,V_in,string_params);
+        %...
+    end
 end 
